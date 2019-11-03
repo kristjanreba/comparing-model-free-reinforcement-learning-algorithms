@@ -1,17 +1,23 @@
-V seminarski nalogi bomo primerjali tri različne algoritme spodbujevalnega učenja na treh različnih nalogah.
-
-Algoritmi:
-- Proximal policy optimization (PPO)
-- Asinchronous actor critic (A2C)
-- Soft actor critic (SAC)
+V seminarski nalogi bomo primerjali tri različne algoritme
+spodbujevalnega učenjana na treh različnih nalogah.
 
 Za izvedbo eksperimentov bomo uporabili knjižnico stable-baselines (algoritmi)
 in knjižnico gym (igre za testiranje algoritmov).
 
+Algoritmi:
+- Proximal policy optimisation (PPO)
+- Asynchronous actor critic (A2C)
+- Soft actor critic (SAC)
+
 Igre:
--
--
-- Pong
+- BipedalWalker (https://gym.openai.com/envs/BipedalWalkerHardcore-v2/)
+- CartPole (https://gym.openai.com/envs/CartPole-v1/)
+- Pong (https://gym.openai.com/envs/Pong-v0/)
 
 Izvedli bomo predprocesiranje vhodnih podatkov ter prilagodili algoritme
 za opravljanje posameznih nalog.
+
+Algoritme bomo primerjali po:
+  - Številu epizod po katerih skonvergirajo. (sample complexity)
+  - Robustnost na hyperparametre
+  - Kakovost naučenih algoritov (glede na končni rezultat igre)
