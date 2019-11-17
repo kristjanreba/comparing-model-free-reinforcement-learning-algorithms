@@ -11,13 +11,14 @@ Algoritmi:
 
 Igre:
 - BipedalWalker (https://gym.openai.com/envs/BipedalWalkerHardcore-v2/)
-- CartPole (https://gym.openai.com/envs/CartPole-v1/)
+- MountainCarContinuous-v0 (https://gym.openai.com/envs/CartPole-v1/)
 - Pong (https://gym.openai.com/envs/Pong-v0/)
 
 Izvedli bomo predprocesiranje vhodnih podatkov ter prilagodili algoritme
 za opravljanje posameznih nalog.
 
 Algoritme bomo primerjali po:
-  - Številu epizod po katerih skonvergirajo. (sample complexity)
-  - Robustnost na hyperparametre
+  - Številu korakov (timesteps) po katerih skonvergirajo. (sample complexity)
+  - Robustnost na random seed (samo na enem tasku, za vsak algoritem)
   - Kakovost naučenih algoritov (glede na končni rezultat igre)
+  (razvidno iz prvega grafa o stevilu korakov)

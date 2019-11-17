@@ -76,7 +76,7 @@ def plot_results(log_folder, agent_name, title='Learning Curve'):
     # Truncate x
     x = x[len(x) - len(y):]
 
-    fig = plt.figure(title)
+    fig = plt.figure(agent_name)
     plt.plot(x, y)
     plt.xlabel('Number of Timesteps')
     plt.ylabel('Rewards')
@@ -84,50 +84,81 @@ def plot_results(log_folder, agent_name, title='Learning Curve'):
     plt.savefig(agent_name+".png")
 
 
+def plot_all_together(agent_names, env_name, n_runs, title):
+    fig = plt.figure(title)
+    for a in agent_names:
+        x, y = ts2xy(load_results('log_{}_{}_{}/'.format(agent_name, env_name, run_number)), 'timesteps')
+        mean = []
+        std = []
+        #y = moving_average(y, window=50)
+        #x = x[len(x) - len(y):]
+        plt.plot(x, y, label=a.upper())
+        #plt.fill_between(x, mean-std, mean+std)
+
+
+    plt.xlabel('Number of Timesteps')
+    plt.ylabel('Rewards')
+    plt.title(title)
+    plt.legend()
+    plt.savefig(title + ".png")
+
+
+
 if __name__ == '__main__':
 
+    retrain_agents = True
     RENDER_TIMESTAMPS = int(1e3)
     TRAIN_TIMESTAMPS = int(1e5)
-    env_name = 'BipedalWalker-v2'
+    n_runs = 10
+    env_name = 'MountainCarContinuous-v0'
+    #env_name = 'BipedalWalker-v2'
+    #env_name = 'Pong-v0'
+
+    if retrain_agents:
+        for i in range(n_runs):
+            agent_name = 'a2c'
+            print('Testing agent ' + agent_name)
+            best_mean_reward, n_steps = -np.inf, 0
+            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, run_number)
+            os.makedirs(log_dir, exist_ok=True)
+            env = gym.make(env_name)
+            env = Monitor(env, log_dir, allow_early_resets=True)
+            env = DummyVecEnv([lambda: env])
+            model_A2C = A2C(MlpPolicy, env, verbose=0)
+            model_A2C.learn(total_timesteps=TRAIN_TIMESTAMPS, callback=callback)
+            plot_results(log_dir, agent_name)
+        
+            agent_name = 'sac'
+            print('Testing agent ' + agent_name)
+            best_mean_reward, n_steps = -np.inf, 0
+            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, run_number)
+            os.makedirs(log_dir, exist_ok=True)
+            env = gym.make(env_name)
+            env = Monitor(env, log_dir, allow_early_resets=True)
+            env = DummyVecEnv([lambda: env])
+            model_SAC = SAC(SacMlpPolicy, env, verbose=0)
+            model_SAC.learn(total_timesteps=TRAIN_TIMESTAMPS, callback=callback)
+            plot_results(log_dir, agent_name)
+
+            agent_name = 'ppo'
+            print('Testing agent ' + agent_name)
+            best_mean_reward, n_steps = -np.inf, 0
+            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, run_number)
+            os.makedirs(log_dir, exist_ok=True)
+            env = gym.make(env_name)
+            env = Monitor(env, log_dir, allow_early_resets=True)
+            env = DummyVecEnv([lambda: env])
+            model_PPO2 = PPO2(MlpPolicy, env, verbose=0)
+            model_PPO2.learn(total_timesteps=TRAIN_TIMESTAMPS, callback=callback)
+            plot_results(log_dir, agent_name)
 
 
-    agent_name = 'a2c'
-    print('Testing agent ' + agent_name)
-    best_mean_reward, n_steps = -np.inf, 0
-    log_dir = 'logging_' + agent_name + '/'
-    os.makedirs(log_dir, exist_ok=True)
-    env = gym.make(env_name)
-    env = Monitor(env, log_dir, allow_early_resets=True)
-    env = DummyVecEnv([lambda: env])
-    model_A2C = A2C(MlpPolicy, env, verbose=0)
-    model_A2C.learn(total_timesteps=TRAIN_TIMESTAMPS, callback=callback)
-    plot_results(log_dir, agent_name)
- 
-    agent_name = 'sac'
-    print('Testing agent ' + agent_name)
-    best_mean_reward, n_steps = -np.inf, 0
-    log_dir = 'logging_' + agent_name + '/'
-    os.makedirs(log_dir, exist_ok=True)
-    env = gym.make(env_name)
-    env = Monitor(env, log_dir, allow_early_resets=True)
-    env = DummyVecEnv([lambda: env])
-    model_SAC = SAC(SacMlpPolicy, env, verbose=0)
-    model_SAC.learn(total_timesteps=TRAIN_TIMESTAMPS, callback=callback) 
-    plot_results(log_dir, agent_name)
 
-    agent_name = 'ppo'
-    print('Testing agent ' + agent_name)
-    best_mean_reward, n_steps = -np.inf, 0
-    log_dir = 'logging_' + agent_name + '/'
-    os.makedirs(log_dir, exist_ok=True)
-    env = gym.make(env_name)
-    env = Monitor(env, log_dir, allow_early_resets=True)
-    env = DummyVecEnv([lambda: env])
-    model_PPO2 = PPO2(MlpPolicy, env, verbose=0)
-    model_PPO2.learn(total_timesteps=TRAIN_TIMESTAMPS, callback=callback)
-    plot_results(log_dir, agent_name)
+    ##########################################################################
+    # EXPERIMENTS Timestaps vs Reward vs Robustness to initialization
+    ##########################################################################
+    agent_names = ['a2c','ppo','sac']
+    title = env_name
+    def plot_all_together(agent_names, env_name, n_runs, title)
 
-    #render_env(env, model_A2C)
-    #render_env(env, model_SAC)
-    #render_env(env, model_PPO2)
 
