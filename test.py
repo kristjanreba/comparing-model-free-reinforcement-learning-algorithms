@@ -64,7 +64,7 @@ def moving_average(values, window):
     return np.convolve(values, weights, 'valid')
 
 
-def plot_results(log_folder, agent_name, title='Learning Curve'):
+def plot_results(log_folder, agent_name, title):
     """
     plot the results
 
@@ -84,19 +84,24 @@ def plot_results(log_folder, agent_name, title='Learning Curve'):
     plt.savefig(agent_name+".png")
 
 
-def plot_all_together(agent_names, env_name, n_runs, title):
+def plot_all_together(agent_names, env_name, n_runs, n_timesteps, title):
     fig = plt.figure(title)
     for a in agent_names:
-        x, y = ts2xy(load_results('log_{}_{}_{}/'.format(agent_name, env_name, run_number)), 'timesteps')
-        mean = []
-        std = []
-        #y = moving_average(y, window=50)
-        #x = x[len(x) - len(y):]
-        plt.plot(x, y, label=a.upper())
-        #plt.fill_between(x, mean-std, mean+std)
+        x = np.arange(n_timesteps)
+        y = np.array([])
+        for i in range(n_runs):
+            run_x, run_y = ts2xy(load_results('log_{}_{}_{}/'.format(agent_name, env_name, run_number)), 'timesteps')
+            print(run_x[:10], run_x.shape)
+            print(run_y[:10], run_y.shape)
+            np.concatenate((y, run_y), axis=0)
+            
 
+        mean = np.mean(runs_y, axis=1)
+        std = np.std(runs_y, axis=1)
+        plt.plot(x, mean, label=a.upper())
+        plt.fill_between(x, mean-std, mean+std)
 
-    plt.xlabel('Number of Timesteps')
+    plt.xlabel('Timesteps')
     plt.ylabel('Rewards')
     plt.title(title)
     plt.legend()
@@ -106,7 +111,7 @@ def plot_all_together(agent_names, env_name, n_runs, title):
 
 if __name__ == '__main__':
 
-    retrain_agents = True
+    retrain_agents = False
     RENDER_TIMESTAMPS = int(1e3)
     TRAIN_TIMESTAMPS = int(1e5)
     n_runs = 10
@@ -119,38 +124,35 @@ if __name__ == '__main__':
             agent_name = 'a2c'
             print('Testing agent ' + agent_name)
             best_mean_reward, n_steps = -np.inf, 0
-            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, run_number)
+            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, n_runs)
             os.makedirs(log_dir, exist_ok=True)
             env = gym.make(env_name)
             env = Monitor(env, log_dir, allow_early_resets=True)
             env = DummyVecEnv([lambda: env])
             model_A2C = A2C(MlpPolicy, env, verbose=0)
             model_A2C.learn(total_timesteps=TRAIN_TIMESTAMPS, callback=callback)
-            plot_results(log_dir, agent_name)
         
             agent_name = 'sac'
             print('Testing agent ' + agent_name)
             best_mean_reward, n_steps = -np.inf, 0
-            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, run_number)
+            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, n_runs)
             os.makedirs(log_dir, exist_ok=True)
             env = gym.make(env_name)
             env = Monitor(env, log_dir, allow_early_resets=True)
             env = DummyVecEnv([lambda: env])
             model_SAC = SAC(SacMlpPolicy, env, verbose=0)
             model_SAC.learn(total_timesteps=TRAIN_TIMESTAMPS, callback=callback)
-            plot_results(log_dir, agent_name)
 
             agent_name = 'ppo'
             print('Testing agent ' + agent_name)
             best_mean_reward, n_steps = -np.inf, 0
-            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, run_number)
+            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, n_runs)
             os.makedirs(log_dir, exist_ok=True)
             env = gym.make(env_name)
             env = Monitor(env, log_dir, allow_early_resets=True)
             env = DummyVecEnv([lambda: env])
             model_PPO2 = PPO2(MlpPolicy, env, verbose=0)
             model_PPO2.learn(total_timesteps=TRAIN_TIMESTAMPS, callback=callback)
-            plot_results(log_dir, agent_name)
 
 
 
@@ -159,6 +161,7 @@ if __name__ == '__main__':
     ##########################################################################
     agent_names = ['a2c','ppo','sac']
     title = env_name
-    def plot_all_together(agent_names, env_name, n_runs, title)
+    n_timesteps = TRAIN_TIMESTAMPS
+    plot_all_together(agent_names, env_name, n_runs, n_timesteps, title)
 
 
