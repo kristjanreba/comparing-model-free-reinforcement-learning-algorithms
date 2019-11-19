@@ -34,8 +34,8 @@ def callback(_locals, _globals):
   :param _globals: (dict)
   """
   global n_steps, best_mean_reward
-  # Print stats every 1000 calls
-  if (n_steps + 1) % 1000 == 0:
+  # Print stats every 10000 calls
+  if (n_steps + 1) % 10000 == 0:
       # Evaluate policy training performance
       x, y = ts2xy(load_results(log_dir), 'timesteps')
       if len(x) > 0:
@@ -81,50 +81,99 @@ def plot_results(log_folder, agent_name, title):
     plt.xlabel('Number of Timesteps')
     plt.ylabel('Rewards')
     plt.title(title + " Smoothed")
-    plt.savefig(agent_name+".png")
+    plt.savefig(agent_name+".png", dpi=300)
 
 
 def plot_all_together(agent_names, env_name, n_runs, n_timesteps, title):
     fig = plt.figure(title)
     for a in agent_names:
-        x = np.arange(n_timesteps)
-        y = np.array([])
+        max_run_len = 0
+        runs = []
         for i in range(n_runs):
-            run_x, run_y = ts2xy(load_results('log_{}_{}_{}/'.format(agent_name, env_name, run_number)), 'timesteps')
-            print(run_x[:10], run_x.shape)
-            print(run_y[:10], run_y.shape)
-            np.concatenate((y, run_y), axis=0)
-            
+            run_x, run_y = ts2xy(load_results('log_{}_{}_{}/'.format(a, env_name, i)), 'timesteps')
+            runs.append((run_x, run_y))
+            if max_run_len < run_x.shape[0]:
+                max_run_len = run_x.shape[0]
+            print('run_x shape: ', run_x.shape)
+            print('run_y shape: ', run_y.shape)
 
-        mean = np.mean(runs_y, axis=1)
-        std = np.std(runs_y, axis=1)
+        x = np.arange(max_run_len)
+        y = np.full((max_run_len, n_runs), np.nan)
+        print('x shape: ', x.shape)
+        print('y shape: ', y.shape)
+        print('y shape test: ', y[:,1].reshape(-1,1).shape)
+
+        ix = 0
+        for (_, run_y) in runs:
+            y[:run_y.shape[0], ix] = run_y
+            ix = ix+1
+        
+        #x = x.reshape(-1,1)
+        #y = y.reshape(-1,n_runs)
+
+        print('x shape: ', x.shape)
+        print('y shape: ', y.shape)
+
+        
+        mean = np.mean(y, axis=1)
+        std = np.std(y, axis=1)
+        print(mean.shape)
+        print(std.shape)
+        print(mean[:10])
+        print(std[:10])
+
+        mean = moving_average(mean, window=50)
+        std = moving_average(std, window=50)
+        x = x[len(x) - len(mean):]
+
         plt.plot(x, mean, label=a.upper())
-        plt.fill_between(x, mean-std, mean+std)
+        plt.fill_between(x, mean-std, mean+std, alpha=0.3)
 
+    ax = plt.gca()
+    ax.set_facecolor("lightgrey")
+    fig.set_facecolor('white')
+    plt.grid(color='w', linestyle='-', linewidth=1)
     plt.xlabel('Timesteps')
     plt.ylabel('Rewards')
     plt.title(title)
     plt.legend()
-    plt.savefig(title + ".png")
+    plt.show()
+    plt.savefig(title + ".png", facecolor=ax.get_facecolor(), edgecolor='w', transparent=True, dpi=300,)
 
 
 
 if __name__ == '__main__':
 
+    '''
     retrain_agents = False
     RENDER_TIMESTAMPS = int(1e3)
     TRAIN_TIMESTAMPS = int(1e5)
     n_runs = 10
     env_name = 'MountainCarContinuous-v0'
-    #env_name = 'BipedalWalker-v2'
-    #env_name = 'Pong-v0'
+    '''
+    
+    retrain_agents = False
+    RENDER_TIMESTAMPS = int(1e3)
+    TRAIN_TIMESTAMPS = int(1e6)
+    n_runs = 5
+    env_name = 'BipedalWalker-v2'
+
+    '''
+    retrain_agents = False
+    RENDER_TIMESTAMPS = int(1e3)
+    TRAIN_TIMESTAMPS = int(1e6)
+    n_runs = 10
+    env_name = 'Pong-v0'
+    '''
 
     if retrain_agents:
         for i in range(n_runs):
+            print('Run number: ', i)
+
             agent_name = 'a2c'
             print('Testing agent ' + agent_name)
             best_mean_reward, n_steps = -np.inf, 0
-            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, n_runs)
+            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, i)
             os.makedirs(log_dir, exist_ok=True)
             env = gym.make(env_name)
             env = Monitor(env, log_dir, allow_early_resets=True)
@@ -135,7 +184,7 @@ if __name__ == '__main__':
             agent_name = 'sac'
             print('Testing agent ' + agent_name)
             best_mean_reward, n_steps = -np.inf, 0
-            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, n_runs)
+            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, i)
             os.makedirs(log_dir, exist_ok=True)
             env = gym.make(env_name)
             env = Monitor(env, log_dir, allow_early_resets=True)
@@ -146,7 +195,7 @@ if __name__ == '__main__':
             agent_name = 'ppo'
             print('Testing agent ' + agent_name)
             best_mean_reward, n_steps = -np.inf, 0
-            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, n_runs)
+            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, i)
             os.makedirs(log_dir, exist_ok=True)
             env = gym.make(env_name)
             env = Monitor(env, log_dir, allow_early_resets=True)
