@@ -1,6 +1,7 @@
 import os
 import gym
 import numpy as np
+import math
 
 from stable_baselines import results_plotter
 from stable_baselines import A2C, SAC, PPO2
@@ -86,6 +87,7 @@ def plot_results(log_folder, agent_name, title):
 
 def plot_all_together(agent_names, env_name, n_runs, n_timesteps, title):
     fig = plt.figure(title)
+    min_run_len = math.inf
     for a in agent_names:
         max_run_len = 0
         runs = []
@@ -94,33 +96,27 @@ def plot_all_together(agent_names, env_name, n_runs, n_timesteps, title):
             runs.append((run_x, run_y))
             if max_run_len < run_x.shape[0]:
                 max_run_len = run_x.shape[0]
-            print('run_x shape: ', run_x.shape)
-            print('run_y shape: ', run_y.shape)
+
+        if max_run_len < min_run_len:
+           min_run_len = max_run_len
 
         x = np.arange(max_run_len)
         y = np.full((max_run_len, n_runs), np.nan)
-        print('x shape: ', x.shape)
-        print('y shape: ', y.shape)
-        print('y shape test: ', y[:,1].reshape(-1,1).shape)
 
         ix = 0
         for (_, run_y) in runs:
             y[:run_y.shape[0], ix] = run_y
             ix = ix+1
         
-        #x = x.reshape(-1,1)
-        #y = y.reshape(-1,n_runs)
+        #y = y[:max_run_len,:]
 
         print('x shape: ', x.shape)
         print('y shape: ', y.shape)
 
-        
         mean = np.mean(y, axis=1)
         std = np.std(y, axis=1)
         print(mean.shape)
         print(std.shape)
-        print(mean[:10])
-        print(std[:10])
 
         mean = moving_average(mean, window=50)
         std = moving_average(std, window=50)
@@ -129,41 +125,38 @@ def plot_all_together(agent_names, env_name, n_runs, n_timesteps, title):
         plt.plot(x, mean, label=a.upper())
         plt.fill_between(x, mean-std, mean+std, alpha=0.3)
 
-    ax = plt.gca()
-    ax.set_facecolor("lightgrey")
-    fig.set_facecolor('white')
-    plt.grid(color='w', linestyle='-', linewidth=1)
+
+    plt.grid(color='grey', linestyle='-', linewidth=1)
     plt.xlabel('Timesteps')
-    plt.ylabel('Rewards')
+    plt.ylabel('Reward')
     plt.title(title)
     plt.legend()
     plt.show()
-    plt.savefig(title + ".png", facecolor=ax.get_facecolor(), edgecolor='w', transparent=True, dpi=300,)
 
 
 
 if __name__ == '__main__':
 
-    '''
+    
     retrain_agents = False
     RENDER_TIMESTAMPS = int(1e3)
     TRAIN_TIMESTAMPS = int(1e5)
-    n_runs = 10
+    n_runs = 9
     env_name = 'MountainCarContinuous-v0'
-    '''
     
+    '''
     retrain_agents = False
     RENDER_TIMESTAMPS = int(1e3)
     TRAIN_TIMESTAMPS = int(1e6)
     n_runs = 5
     env_name = 'BipedalWalker-v2'
-
+    '''
     '''
     retrain_agents = False
     RENDER_TIMESTAMPS = int(1e3)
     TRAIN_TIMESTAMPS = int(1e6)
-    n_runs = 10
-    env_name = 'Pong-v0'
+    n_runs = 4
+    env_name = 'LunarLanderContinuous-v2'
     '''
 
     if retrain_agents:
@@ -208,7 +201,7 @@ if __name__ == '__main__':
     ##########################################################################
     # EXPERIMENTS Timestaps vs Reward vs Robustness to initialization
     ##########################################################################
-    agent_names = ['a2c','ppo','sac']
+    agent_names = ['sac','a2c','ppo']
     title = env_name
     n_timesteps = TRAIN_TIMESTAMPS
     plot_all_together(agent_names, env_name, n_runs, n_timesteps, title)
