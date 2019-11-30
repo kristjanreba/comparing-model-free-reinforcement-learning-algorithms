@@ -6,12 +6,6 @@ import matplotlib.pyplot as plt
 
 
 def moving_average(values, window):
-    """
-    Smooth values by doing a moving average
-    :param values: (numpy array)
-    :param window: (int)
-    :return: (numpy array)
-    """
     weights = np.repeat(1.0, window) / window
     return np.convolve(values, weights, 'valid')
 
@@ -29,11 +23,12 @@ def plot_all_together(agent_names, env_name, n_runs, title):
             runs.append((run_x, run_y))
             if max_run_len < run_x.shape[0]:
                 max_run_len = run_x.shape[0]
-
+            print('agent: ', a)
             print('run_x: ', run_x.shape)
             print('run_y: ', run_y.shape)
 
-        
+            if run_x.shape[0] < min_run_len:
+                min_run_len = run_x.shape[0]
         y = np.full((max_run_len, n_runs), np.nan)
 
         ix = 0
@@ -42,20 +37,20 @@ def plot_all_together(agent_names, env_name, n_runs, title):
             ix = ix+1
         
         ys.append(y)
-        #y = y[:max_run_len,:]
 
     i = 0
     for a in agent_names:
         y = ys[i]
         i = i + 1
+        y = y[:min_run_len,:]
         x = np.arange(min_run_len)
         print('x shape: ', x.shape)
         print('y shape: ', y.shape)
 
         mean = np.mean(y, axis=1)
         std = np.std(y, axis=1)
-        print(mean.shape)
-        print(std.shape)
+        print('mean shape', mean.shape)
+        print('std shape', std.shape)
 
         mean = moving_average(mean, window=50)
         std = moving_average(std, window=50)
@@ -74,11 +69,9 @@ def plot_all_together(agent_names, env_name, n_runs, title):
 
 
 
-#env_name = 'MountainCarContinuous-v0'
-#n_runs = 10
-
 env_name = 'LunarLanderContinuous-v2'
-n_runs = 4
+#env_name = 'BipedalWalker-v2'
+n_runs = 3
 
 agent_names = ['sac','a2c','ppo']
 plot_all_together(agent_names, env_name, n_runs, env_name)
