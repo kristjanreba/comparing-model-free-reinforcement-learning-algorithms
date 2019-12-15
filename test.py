@@ -43,8 +43,8 @@ def callback(_locals, _globals):
 if __name__ == '__main__':
 
     env_names = ['MountainCarContinuous-v0']#, 'BipedalWalker-v2', 'LunarLanderContinuous-v2']
-    n_runs = 4
-    train_timestamps = int(1e5)
+    n_runs = 3
+    train_timestamps = int(1e6)
 
     for env_name in env_names:
         for i in range(n_runs):

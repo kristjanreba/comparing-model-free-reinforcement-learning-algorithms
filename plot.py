@@ -27,8 +27,8 @@ def plot_all_together(agent_names, env_name, n_runs, title):
             print('run_x: ', run_x.shape)
             print('run_y: ', run_y.shape)
 
-            if run_x.shape[0] < min_run_len:
-                min_run_len = run_x.shape[0]
+            #if run_x.shape[0] < min_run_len:
+            #    min_run_len = run_x.shape[0]
         y = np.full((max_run_len, n_runs), np.nan)
 
         ix = 0
@@ -42,8 +42,8 @@ def plot_all_together(agent_names, env_name, n_runs, title):
     for a in agent_names:
         y = ys[i]
         i = i + 1
-        y = y[:min_run_len,:]
-        x = np.arange(min_run_len)
+        #y = y[:min_run_len,:]
+        x = np.arange(y.shape[0])
         print('x shape: ', x.shape)
         print('y shape: ', y.shape)
 
@@ -55,10 +55,9 @@ def plot_all_together(agent_names, env_name, n_runs, title):
         mean = moving_average(mean, window=50)
         std = moving_average(std, window=50)
         x = x[len(x) - len(mean):]
-
+        x = x * (1e5 / len(x))
         plt.plot(x, mean, label=a.upper())
         plt.fill_between(x, mean-std, mean+std, alpha=0.3)
-
 
     plt.grid(color='grey', linestyle='-', linewidth=1)
     plt.xlabel('Timesteps')
@@ -69,8 +68,9 @@ def plot_all_together(agent_names, env_name, n_runs, title):
 
 
 
-env_name = 'LunarLanderContinuous-v2'
+#env_name = 'LunarLanderContinuous-v2'
 #env_name = 'BipedalWalker-v2'
+env_name = 'MountainCarContinuous-v0'
 n_runs = 3
 
 agent_names = ['sac','a2c','ppo']
