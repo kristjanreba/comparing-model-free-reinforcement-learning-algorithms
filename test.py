@@ -53,7 +53,7 @@ if __name__ == '__main__':
             agent_name = 'a2c'
             print('Testing agent ' + agent_name)
             best_mean_reward, n_steps = -np.inf, 0
-            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, i)
+            log_dir = 'logs/log_{}_{}_{}/'.format(agent_name, env_name, i)
             os.makedirs(log_dir, exist_ok=True)
             env = gym.make(env_name)
             env = Monitor(env, log_dir, allow_early_resets=True)
@@ -64,7 +64,7 @@ if __name__ == '__main__':
             agent_name = 'sac'
             print('Testing agent ' + agent_name)
             best_mean_reward, n_steps = -np.inf, 0
-            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, i)
+            log_dir = 'logs/log_{}_{}_{}/'.format(agent_name, env_name, i)
             os.makedirs(log_dir, exist_ok=True)
             env = gym.make(env_name)
             env = Monitor(env, log_dir, allow_early_resets=True)
@@ -75,7 +75,7 @@ if __name__ == '__main__':
             agent_name = 'ppo'
             print('Testing agent ' + agent_name)
             best_mean_reward, n_steps = -np.inf, 0
-            log_dir = 'log_{}_{}_{}/'.format(agent_name, env_name, i)
+            log_dir = 'logs/log_{}_{}_{}/'.format(agent_name, env_name, i)
             os.makedirs(log_dir, exist_ok=True)
             env = gym.make(env_name)
             env = Monitor(env, log_dir, allow_early_resets=True)

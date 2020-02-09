@@ -19,7 +19,7 @@ def plot_all_together(agent_names, env_name, n_runs, title):
         max_run_len = 0
         runs = []
         for i in range(n_runs):
-            run_x, run_y = ts2xy(load_results('log_{}_{}_{}/'.format(a, env_name, i)), 'timesteps')
+            run_x, run_y = ts2xy(load_results('logs/log_{}_{}_{}/'.format(a, env_name, i)), 'timesteps')
             runs.append((run_x, run_y))
             if max_run_len < run_x.shape[0]:
                 max_run_len = run_x.shape[0]
